@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "biolink-mcp": {
+      "url": "http://localhost:3001/mcp",
+      "type": "streamable-http"
+    }
+  }
+}

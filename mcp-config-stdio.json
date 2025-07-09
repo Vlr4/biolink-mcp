@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "biolink-mcp": {
+      "command": "uvx",
+      "args": ["biolink-mcp"],
+      "env": {
+        "MCP_PORT": "3001",
+        "MCP_HOST": "0.0.0.0",
+        "MCP_TRANSPORT": "stdio"
+      }
+    }
+  }
+}
