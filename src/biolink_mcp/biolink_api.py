@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class BiolinkAPIWrapper:
     """Wrapper for the Biolink API."""
     
-    def __init__(self, base_url: str = "https://api.biolink.io/api/"):
+    def __init__(self, base_url: str = "https://api.monarchinitiative.org/v3/api/"):
         self.base_url = base_url
     
     async def get_entity(self, entity_id: str) -> Dict[str, Any]:
