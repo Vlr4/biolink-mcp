@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class BiolinkAPIWrapper:
     """Wrapper for the Biolink API. Currently implements Get Entity and Search """
     
-    def __init__(self, base_url: str = "https://api.monarchinitiative.org/v3/api"):
+    def __init__(self, base_url: str = "https://api-v3.monarchinitiative.org/v3/api"):
         self.base_url = base_url
     
     async def get_entity(self, entity_id: str) -> Dict[str, Any]:
@@ -25,7 +25,7 @@ class BiolinkAPIWrapper:
                 return await response.json()
             
     async def get_association(self, params) -> Dict[str, Any]:
-        """Retrieve all associations for a given entity, or between two enntities"""
+        """Retrieve all associations for a given entity, or between two entities"""
         url = f"{self.base_url}/association/"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params) as response:
@@ -39,6 +39,26 @@ class BiolinkAPIWrapper:
             async with session.get(url, params=params) as response:
                 response.raise_for_status()
                 return await response.json()
+    
+    async def normalize_id(self, query: str, taxon: Optional[str] = None) -> Dict[str, Optional[str]]:
+        """Normalize a biological term and return its canonical ID, full name, and category"""
+        params = {"q": query}
+        if taxon:
+            params["in_taxon_label"] = taxon
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"{self.base_url}/search", params=params) as response:
+                if response.status != 200:
+                    return {"id": None, "full_name": None, "category": None}
+                data = await response.json()
+                items = data.get("items", [])
+                if not items:
+                    return {"id": None, "full_name": None, "category": None}
+                top = items[0]
+                return {
+                    "id": top.get("id"),
+                    "full_name": top.get("full_name"),
+                    "category": top.get("category")
+                }
 
 class BiolinkTools:
     """Handler for Biolink API-related MCP tools."""
@@ -60,6 +80,11 @@ class BiolinkTools:
         """Search for entities in the Biolink API."""
         return await self.biolink_wrapper.search(q)
     
+    async def normalize_id(self, query: str, taxon: Optional[str] = None) -> Dict[str, Optional[str]]:
+        """Normalize a biological term and return its canonical ID, full name, and category. Optional: restrict by taxon label."""
+        return await self.biolink_wrapper.normalize_id(query, taxon)
+
+    
     def register_tools(self):
         """Register Biolink-related MCP tools."""
         self.mcp_server.tool(
@@ -76,3 +101,8 @@ class BiolinkTools:
             name=f"{self.prefix}search",
             description=self.search.__doc__
         )(self.search)
+
+        self.mcp_server.tool(
+            name=f"{self.prefix}normalize",
+            description=self.normalize_id.__doc__
+        )(self.normalize_id)
