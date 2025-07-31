@@ -15,49 +15,62 @@ class BiolinkAPIWrapper:
     
     def __init__(self, base_url: str = "https://api-v3.monarchinitiative.org/v3/api"):
         self.base_url = base_url
+        self.session = aiohttp.ClientSession() = None
     
+    async def _get_session(self) -> aiohttp.ClientSession:
+        """Return an existing session or create a new one."""
+        if self.session is None or self.session.closed:
+            self.session = aiohttp.ClientSession()
+        return self.session
+
+    async def close(self):
+        """Close the session."""
+        if self.session and not self.session.closed:
+            await self.session.close()
+               
     async def get_entity(self, entity_id: str) -> Dict[str, Any]:
         """Fetch a bioentity by its ID."""
         url = f"{self.base_url}/entity/{entity_id}"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                response.raise_for_status()
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(url) as response:
+            response.raise_for_status()
+            return await response.json()
             
     async def get_association(self, params) -> Dict[str, Any]:
         """Retrieve all associations for a given entity, or between two entities"""
         url = f"{self.base_url}/association/"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as response:
-                response.raise_for_status()
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(url, params=params) as response:
+            response.raise_for_status()
+            return await response.json()
     
     async def search(self, params) -> Dict[str, Any]:
         """Search for bioentities by label"""
         url = f"{self.base_url}/search"
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params) as response:
-                response.raise_for_status()
-                return await response.json()
+        session = await self._get_session()
+        async with session.get(url, params=params) as response:
+            response.raise_for_status()
+            return await response.json()
     
     async def normalize_id(self, query: str, taxon: Optional[str] = None) -> Dict[str, Optional[str]]:
         """Normalize a biological term and return its canonical ID, full name, and category"""
         params = {"q": query}
         if taxon:
             params["in_taxon_label"] = taxon
-        async with aiohttp.ClientSession() as session:
-            async with session.get(f"{self.base_url}/search", params=params) as response:
-                if response.status != 200:
-                    return {"id": None, "full_name": None, "category": None}
-                data = await response.json()
-                items = data.get("items", [])
-                if not items:
-                    return {"id": None, "full_name": None, "category": None}
-                top = items[0]
-                return {
-                    "id": top.get("id"),
-                    "full_name": top.get("full_name"),
-                    "category": top.get("category")
+        url = f"{self.base_url}/search"
+        session = await self._get_session()
+        async with session.get(url, params=params) as response:
+            if response.status != 200:
+                return {"id": None, "full_name": None, "category": None}
+            data = await response.json()
+            items = data.get("items", [])
+            if not items:
+                return {"id": None, "full_name": None, "category": None}
+            top = items[0]
+            return {
+                "id": top.get("id"),
+                "full_name": top.get("full_name"),
+                "category": top.get("category")
                 }
 
 class BiolinkTools:
