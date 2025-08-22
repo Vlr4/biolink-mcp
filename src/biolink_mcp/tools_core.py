@@ -50,17 +50,62 @@ class BiolinkTools:
             compact=compact,
         )
 
-    async def gene_interactions(self, entity_id: str, **kw) -> Dict[str, Any]:
+    async def gene_interactions(self,
+            entity_id: str,
+            limit: int = 20,
+            offset: int = 0,
+            max_items: Optional[int] = None,
+            evidence_min: Optional[int] = None,
+            sources: Optional[Iterable[str]] = None,
+            compact: bool = True,
+        ) -> Dict[str, Any]:
         """Preset: gene-to-gene interactions."""
-        return await self.client.gene_interactions(entity_id, **kw)
+        return await self.client.gene_interactions(
+            entity_id,
+            limit=limit,
+            offset=offset,
+            max_items=max_items,
+            evidence_min=evidence_min,
+            sources=sources,
+            compact=compact)
 
-    async def gene_diseases(self, entity_id: str, **kw) -> Dict[str, Any]:
+    async def gene_diseases(self,
+            entity_id: str,
+            limit: int = 20,
+            offset: int = 0,
+            max_items: Optional[int] = None,
+            evidence_min: Optional[int] = None,
+            sources: Optional[Iterable[str]] = None,
+            compact: bool = True,
+        ) -> Dict[str, Any]:
         """Preset: causal gene→disease associations."""
-        return await self.client.gene_diseases(entity_id, **kw)
+        return await self.client.gene_diseases(
+            entity_id,
+            limit=limit,
+            offset=offset,
+            max_items=max_items,
+            evidence_min=evidence_min,
+            sources=sources,
+            compact=compact)
 
-    async def phenotype_genes(self, entity_id: str, **kw) -> Dict[str, Any]:
+    async def phenotype_genes(self,
+            entity_id: str,
+            limit: int = 20,
+            offset: int = 0,
+            max_items: Optional[int] = None,
+            evidence_min: Optional[int] = None,
+            sources: Optional[Iterable[str]] = None,
+            compact: bool = True,
+        ) -> Dict[str, Any]:
         """Preset: gene↔phenotypic feature associations."""
-        return await self.client.phenotype_genes(entity_id, **kw)
+        return await self.client.phenotype_genes(
+            entity_id,
+            limit=limit,
+            offset=offset,
+            max_items=max_items,
+            evidence_min=evidence_min,
+            sources=sources,
+            compact=compact)
 
     async def health_check(self) -> Dict[str, Any]:
         """Ping the API and report basic health/latency."""
